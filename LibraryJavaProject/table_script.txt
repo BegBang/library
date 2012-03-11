@@ -1,0 +1,23 @@
+CREATE TABLE library.patron (patron_id INT NOT NULL PRIMARY KEY, first_name VARCHAR(50) NOT NULL, last_name VARCHAR(50) NOT NULL, password VARCHAR(20) NOT NULL, email VARCHAR (255) NOT NULL UNIQUE)
+
+
+
+CREATE TABLE library.item (item_key INT NOT NULL PRIMARY KEY, type CHAR(1) NOT NULL, isbn_equiv VARCHAR(30) NOT NULL, title VARCHAR(50) NOT NULL, author VARCHAR (50) NOT NULL, oversize CHAR(1) NOT NULL, volumes INT, publish_date DATE)
+
+
+
+CREATE TABLE library.copy (item_key INT NOT NULL, copy_number INT NOT NULL, loanable CHAR(1) NOT NULL)
+
+ALTER TABLE library.copy ADD FOREIGN KEY (item_key) REFERENCES library.item(item_key)
+
+ALTER TABLE library.copy ADD PRIMARY KEY (item_key, copy_number)
+
+
+
+CREATE TABLE library.onloan (patron_id INT NOT NULL, item_key INT NOT NULL, copy_number INT NOT NULL, times_renewed INT NOT NULL, due_date DATE)
+
+ALTER TABLE library.onloan ADD FOREIGN KEY (patron_id) REFERENCES library.patron(patron_id)
+
+//ALTER TABLE library.onloan ADD FOREIGN KEY (item_key) REFERENCES library.item(item_key) -- tohle pravdepodobne nebude potreba, resi to nasledujici dotaz
+
+ALTER TABLE library.onloan ADD FOREIGN KEY (item_key, copy_number) REFERENCES library.copy(item_key, copy_number)
