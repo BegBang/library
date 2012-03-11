@@ -9,5 +9,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JRE WebSphere Application Server v7.0"/>
+	<classpathentry kind="lib" path="C:/Program Files/IBM/SDPShared/plugins/com.ibm.datatools.db2_2.0.103.v20090522_1813/driver/db2jcc.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

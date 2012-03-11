@@ -21,6 +21,7 @@ public class DriverManagerConnection implements BuildConnection {
 	@Override
 	public Connection getConnection() throws SQLException {
 		return DriverManager.getConnection(databaseURL, info);
+		//return DriverManager.getConnection(databaseURL, "db2inst1", "admin");
 	}
 
 }
