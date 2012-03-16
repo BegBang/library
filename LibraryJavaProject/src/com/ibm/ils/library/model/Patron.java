@@ -1,6 +1,9 @@
 package com.ibm.ils.library.model;
 
+import com.ibm.ils.library.datastore.DataStoreFactory;
 import com.ibm.ils.library.datastore.PatronDataStore;
+import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
+import com.ibm.ils.library.datastore.util.LibraryIdGenerator;
 
 public class Patron {
 	private int id;
@@ -8,10 +11,10 @@ public class Patron {
 	private String lastName;
 	private String email;
 	private String password;
-	private PatronDataStore dataStore;
+	private static PatronDataStore dataStore;
 
 	static {
-		// DataStoreFactory.getPatronDataStore
+		dataStore = DataStoreFactory.getPatronDataStore();
 	}
 
 	public Patron() {
@@ -31,8 +34,8 @@ public class Patron {
 		this.password = password;
 	}
 
-	public Patron(int id, String firstName, String lastName, String email,
-			String password) {
+	public Patron(int id, String firstName, String lastName, String password,
+			String email) {
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -41,11 +44,25 @@ public class Patron {
 	}
 
 	public void add() {
+		if (this.id == 0) {
+			this.id = LibraryIdGenerator.generateId();
+		}
+
+		// TODO check password validity
+
+		try {
+			dataStore.add(this);
+		} catch (SystemUnavailableException e) {
+			// TODO nepodarilo se pridat patrona
+			e.printStackTrace();
+		}
+		// odchytani vyjimky existujici patron a
+		// zrejme poslani vyjimky dal
 
 	}
-	
+
 	public void findById(int id) {
-		
+		// ma to tu byt ?
 	}
 
 	//
@@ -89,6 +106,13 @@ public class Patron {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	@Override
+	public String toString() {
+		return String.format(
+				"User[id=%d,firstName=%s,lastName=%s,password=%s,email=%s]",
+				id, firstName, lastName, password, email);
 	}
 
 }

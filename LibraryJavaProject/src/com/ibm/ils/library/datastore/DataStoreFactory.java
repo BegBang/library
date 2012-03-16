@@ -40,7 +40,7 @@ public class DataStoreFactory {
 		patronDataStore = new PatronDataStoreJDBC(factory);
 	}
 
-	public PatronDataStore getPatronDataStore() {
+	public static PatronDataStore getPatronDataStore() {
 		return patronDataStore;
 	}
 	
