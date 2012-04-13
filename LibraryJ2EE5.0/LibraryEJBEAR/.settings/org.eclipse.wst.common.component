@@ -8,5 +8,8 @@
         <dependent-module archiveName="LibraryEJBClient.jar" deploy-path="/" handle="module:/resource/LibraryEJBClient/LibraryEJBClient">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="LibraryJPA.jar" deploy-path="/lib" handle="module:/resource/LibraryJPA/LibraryJPA">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
     </wb-module>
 </project-modules>
