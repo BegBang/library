@@ -12,115 +12,261 @@ import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
 import com.ibm.ils.library.model.Copy;
 import com.ibm.ils.library.model.LoanedCopy;
 import com.ibm.ils.library.model.Patron;
+import com.ibm.ils.library.model.exceptions.OperationFailed;
+import com.ibm.ils.library.model.exceptions.PatronExists;
+import com.ibm.ils.library.model.exceptions.PatronNotFound;
+
 import static com.ibm.ils.library.datastore.util.DAOUtil.close;
 
 public class PatronDataStoreJDBC implements PatronDataStore {
-	private ConnectionFactory factory;
+  private ConnectionFactory factory;
 
-	private static final String SQL_INSERT = "INSERT INTO LIBRARY.PATRON (patron_id, first_name, last_name, password, email) VALUES (?, ?, ?, ?, ?)";
-	private static final String SQL_FIND_BY_EMAIL = "SELECT patron_id, first_name, last_name, password, email FROM LIBRARY.PATRON where email = ?";
-	private static final String SQL_FIND_BY_ID = "SELECT patron_id, first_name, last_name, password, email FROM LIBRARY.PATRON where patron_id = ?";
-	private static final String SQL_REMOVE = "DELETE FROM LIBRARY.PATRON WHERE patron_id = ?";
-	private static final String SQL_UPDATE = "UPDATE LIBRARY.PATRON SET first_name = ?, last_name = ?, password = ?, email = ?  WHERE patron_id = ?";
+  private static final String SQL_ADD = "INSERT INTO LIBRARY.PATRON (patron_id, first_name, last_name, password, email) VALUES (?, ?, ?, ?, ?)";
+  private static final String SQL_FIND_BY_EMAIL = "SELECT patron_id, first_name, last_name, password, email FROM LIBRARY.PATRON where email = ?";
+  private static final String SQL_FIND_BY_ID = "SELECT patron_id, first_name, last_name, password, email FROM LIBRARY.PATRON where patron_id = ?";
+  private static final String SQL_REMOVE = "DELETE FROM LIBRARY.PATRON WHERE patron_id = ?";
+  private static final String SQL_UPDATE = "UPDATE LIBRARY.PATRON SET first_name = ?, last_name = ?, password = ?, email = ?  WHERE patron_id = ?";
 
-	private static final int PATRON_ID_IND = 1;
-	private static final int FIRST_NAME_IND = 2;
-	private static final int LAST_NAME_IND = 3;
-	private static final int PASSWORD_IND = 4;
-	private static final int EMAIL_IND = 5;
+  private static final String SQLSTATE_ALREADY_EXISTS = "23505";
 
-	public PatronDataStoreJDBC(ConnectionFactory factory) {
-		this.factory = factory;
-	}
+  public PatronDataStoreJDBC(ConnectionFactory factory) {
+    this.factory = factory;
+  }
 
-	@Override
-	public void add(Patron patron) throws SystemUnavailableException {
-		Connection connection = null;
-		PreparedStatement preparedStatement = null;
+  @Override
+  public void add(Patron patron) throws PatronExists,
+      SystemUnavailableException, OperationFailed {
+    Connection connection = null;
+    PreparedStatement statementInsert = null;
 
-		try {
+    // get the add prepared statement
+    try {
+      connection = factory.getConnection();
+      statementInsert = connection.prepareStatement(SQL_ADD);
 
-			connection = factory.getConnection();
-			preparedStatement = connection.prepareStatement(SQL_INSERT);
-			preparedStatement.setObject(PATRON_ID_IND, patron.getId());
-			preparedStatement.setObject(FIRST_NAME_IND, patron.getFirstName());
-			preparedStatement.setObject(LAST_NAME_IND, patron.getLastName());
-			preparedStatement.setObject(PASSWORD_IND, patron.getPassword());
-			preparedStatement.setObject(EMAIL_IND, patron.getEmail());
-			int affectedRows = preparedStatement.executeUpdate();
-			if (affectedRows == 0) {
-				throw new SystemUnavailableException(
-						"Adding patron failed, no rows affected.");
-			}
-		} catch (SQLException e) {
-			// TODO: analyzovat sql kod a hodit vyjimku PatronExists
-			// pokud uz email existuje?
-		} finally {
-			close(null, preparedStatement, connection);
-		}
+      // do the add
+      try {
+        populateStatementForAdd(statementInsert, patron);
+        statementInsert.executeUpdate();
+      }
+      catch (SQLException e) {
+        if (e.getSQLState().equals(SQLSTATE_ALREADY_EXISTS)) {
+          throw new PatronExists(patron.getId(), patron.getEmail());// TODO id
+                                                                    // nebo
+                                                                    // email
+        }
+        else {
+          throw new OperationFailed(e);
+        }
+      }
+    }
+    catch (SQLException e) {
+      throw new SystemUnavailableException(e);
+    }
+    finally {
+      close(null, statementInsert, connection);
+    }
 
-	}
+  }
 
-	@Override
-	public Patron findByEmail(String email) throws SQLException {
-		// TODO Automaticky generovaný stub metody
-		return null;
-	}
+  @Override
+  public Patron findByEmail(String email) throws PatronNotFound,
+      SystemUnavailableException, OperationFailed {
+    Connection connection = null;
+    PreparedStatement statementFind = null;
+    ResultSet resultSet = null;
+    Patron patron = null;
 
-	@Override
-	public Patron findById(int id) {
-		Connection connection = null;
-		PreparedStatement preparedStatement = null;
-		ResultSet resultSet = null;
-		Patron patron = null;
+    // get the find prepared statement
+    try {
+      connection = factory.getConnection();
+      statementFind = connection.prepareStatement(SQL_FIND_BY_EMAIL);
 
-		try {
-			connection = factory.getConnection();
-			preparedStatement = connection.prepareStatement(SQL_FIND_BY_ID);
-			preparedStatement.setObject(PATRON_ID_IND, id);
-			resultSet = preparedStatement.executeQuery();
-			if (resultSet.next()) {
-				patron = mapPatron(resultSet);
-			}
+      // do the find
+      try {
+        statementFind.setString(1, email);
+        resultSet = statementFind.executeQuery();
+        if (resultSet.next()) {
+          patron = mapPatron(resultSet);
+        }
+        else {
+          throw new PatronNotFound(email);
+        }
+      }
+      catch (SQLException e) {
+        throw new OperationFailed(e);
+      }
+    }
+    catch (SQLException e) {
+      throw new SystemUnavailableException(e);
+    }
+    finally {
+      close(resultSet, statementFind, connection);
+    }
+    return patron;
+  }
 
-		} catch (SQLException e) {
-			// TODO 
-			e.printStackTrace();
-		} finally {
-			close(resultSet, preparedStatement, connection);
-		}
-		return patron;
-	}
+  @Override
+  public Patron findById(int id) throws PatronNotFound,
+      SystemUnavailableException, OperationFailed {
+    Connection connection = null;
+    PreparedStatement statementFind = null;
+    ResultSet resultSet = null;
+    Patron patron = null;
 
-	@Override
-	public Collection<Copy> getCopies(Patron patron) throws SQLException {
-		// TODO Automaticky generovaný stub metody
-		return null;
-	}
+    // get the find prepared statement
+    try {
+      connection = factory.getConnection();
+      statementFind = connection.prepareStatement(SQL_FIND_BY_ID);
 
-	@Override
-	public void remove(Patron patron) throws SQLException {
-		// TODO Automaticky generovaný stub metody
+      // do the find
+      try {
+        statementFind.setInt(1, id);
+        resultSet = statementFind.executeQuery();
+        if (resultSet.next()) {
+          patron = mapPatron(resultSet);
+        }
+        else {
+          throw new PatronNotFound(id);
+        }
+      }
+      catch (SQLException e) {
+        throw new OperationFailed(e);
+      }
+    }
+    catch (SQLException e) {
+      throw new SystemUnavailableException(e);
+    }
+    finally {
+      close(resultSet, statementFind, connection);
+    }
+    return patron;
+  }
 
-	}
+  @Override
+  public Collection<Copy> getCopies(Patron patron)
+      throws SystemUnavailableException {
+    // TODO Automaticky generovanï¿½ stub metody
+    return null;
+  }
 
-	@Override
-	public Collection<LoanedCopy> retriveLoanedCopies(Patron patron)
-			throws SQLException {
-		// TODO Automaticky generovaný stub metody
-		return null;
-	}
+  @Override
+  public void remove(Patron patron) throws PatronNotFound,
+      SystemUnavailableException, OperationFailed {
+    Connection connection = null;
+    PreparedStatement statementRemove = null;
 
-	@Override
-	public void update(Patron patron) throws SQLException {
-		// TODO Automaticky generovaný stub metody
+    // get the delete prepared statement
+    try {
+      connection = factory.getConnection();
+      statementRemove = connection.prepareStatement(SQL_REMOVE);
 
-	}
+      // do the delete
+      try {
+        statementRemove.setInt(1, patron.getId());
+        int affectedRows = statementRemove.executeUpdate();
+        if (affectedRows == 0) {
+          throw new PatronNotFound(patron.getId());
+        }
+      }
+      catch (SQLException e) {
+        throw new OperationFailed(e);
+      }
 
-	private static Patron mapPatron(ResultSet rs) throws SQLException {
-		return new Patron(rs.getInt(PATRON_ID_IND), rs
-				.getString(FIRST_NAME_IND), rs.getString(LAST_NAME_IND), rs
-				.getString(PASSWORD_IND), rs.getString(EMAIL_IND));
-	}
+    }
+    catch (SQLException e) {
+      throw new SystemUnavailableException(e);
+    }
+    finally {
+      close(null, statementRemove, connection);
+    }
+
+  }
+
+  @Override
+  public Collection<LoanedCopy> retriveLoanedCopies(Patron patron)
+      throws SystemUnavailableException {
+    // TODO Automaticky generovanï¿½ stub metody
+    return null;
+  }
+
+  @Override
+  public void update(Patron patron) throws SystemUnavailableException,
+      OperationFailed, PatronNotFound, PatronExists {
+    // TODO co kdyz se pokousi updatovat validni hodnotu na nevalidni
+    Connection connection = null;
+    PreparedStatement statementUpdate = null;
+
+    // get the update prepared statement
+    try {
+      connection = factory.getConnection();
+      statementUpdate = connection.prepareStatement(SQL_UPDATE);
+
+      // do the update
+      try {
+        populateStatementForUpdate(statementUpdate, patron);
+        int affectedRows = statementUpdate.executeUpdate();
+        System.out.println("affectedRows: " + affectedRows);
+        if (affectedRows == 0) {
+          // TODO co s tim?
+          throw new PatronNotFound(patron.getId());
+        }
+      }
+      catch (SQLException e) {
+        if (e.getSQLState().equals(SQLSTATE_ALREADY_EXISTS)) {
+          // inserted email exists with another patron
+          throw new PatronExists(patron.getEmail());
+        }
+        else {
+          throw new OperationFailed(e);
+        }
+      }
+      
+    }
+    catch (SQLException e) {
+      throw new SystemUnavailableException(e);
+    }
+    finally {
+      close(null, statementUpdate, connection);
+    }
+  }
+
+  /**
+   * @param rs
+   * @return
+   * @throws SQLException
+   */
+  private static Patron mapPatron(ResultSet rs) throws SQLException {
+    return new Patron(rs.getInt(1), rs.getString(2), rs.getString(3),
+        rs.getString(4), rs.getString(5));
+  }
+
+  /**
+   * Populates PreparedStatement object with data from Patron object.
+   * 
+   * @param statement
+   * @param patron
+   * @return
+   * @throws SQLException
+   */
+  private static PreparedStatement populateStatementForAdd(
+      PreparedStatement statement, Patron patron) throws SQLException {
+    statement.setInt(1, patron.getId());
+    statement.setString(2, patron.getFirstName());
+    statement.setString(3, patron.getLastName());
+    statement.setString(4, patron.getPassword());
+    statement.setString(5, patron.getEmail());
+    return statement;
+  }
+
+  private static PreparedStatement populateStatementForUpdate(
+      PreparedStatement statement, Patron patron) throws SQLException {
+    statement.setString(1, patron.getFirstName());
+    statement.setString(2, patron.getLastName());
+    statement.setString(3, patron.getPassword());
+    statement.setString(4, patron.getEmail());
+    statement.setInt(5, patron.getId());
+    return statement;
+  }
 
 }
