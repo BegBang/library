@@ -55,6 +55,10 @@ public class Copy implements Serializable {
       throws SystemUnavailableException, OperationFailed {
 	  return datastore.findLoanedCopiesForPatronId(id);
 	}
+	
+	public void renew() {
+		
+	}
 
 	//
 	// Getters and setters

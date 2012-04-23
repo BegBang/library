@@ -8,27 +8,34 @@ import com.ibm.ils.library.model.Copy;
 import com.ibm.ils.library.model.Item;
 import com.ibm.ils.library.model.LoanedCopy;
 import com.ibm.ils.library.model.Patron;
+import com.ibm.ils.library.model.exceptions.CopyNotFound;
+import com.ibm.ils.library.model.exceptions.ItemNotFound;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
+import com.ibm.ils.library.model.exceptions.PatronNotFound;
 
 public interface CopyDataStore {
 
-	public void add(Copy patron);
+	public void add(Copy copy);
 
-	public Collection<Copy> findCopiesForItemId(int id);
+	public Collection<Copy> findCopiesForItemId(int id) throws OperationFailed,
+			SystemUnavailableException;
 
 	public Collection<Copy> findCopiesForPatronId(int id)
 			throws SystemUnavailableException, OperationFailed;
 
-  public Collection<LoanedCopy> findLoanedCopiesForPatronId(int id)
-      throws SystemUnavailableException, OperationFailed;
+	public Collection<LoanedCopy> findLoanedCopiesForPatronId(int id)
+			throws SystemUnavailableException, OperationFailed;
 
-	public Item getItem(Copy copy);
+	public Item getItem(Copy copy) throws SystemUnavailableException,
+			OperationFailed, ItemNotFound;
 
-	public Patron getPatron(Copy copy);
+	public Patron getPatron(Copy copy) throws PatronNotFound,
+			SystemUnavailableException, OperationFailed;
 
 	public void remove(Copy copy);
 
-	public void renewCopy(Copy copy, Date dueDate);
+	public void renewCopy(Copy copy, Date dueDate) throws CopyNotFound,
+			OperationFailed, SystemUnavailableException;
 
 	public void update(Copy copy);
 
