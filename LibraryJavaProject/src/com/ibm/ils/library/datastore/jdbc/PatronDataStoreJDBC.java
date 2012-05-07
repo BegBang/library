@@ -175,15 +175,14 @@ public class PatronDataStoreJDBC implements PatronDataStore {
 
 	@Override
 	public Collection<LoanedCopy> retriveLoanedCopies(Patron patron)
-			throws SystemUnavailableException {
-		// TODO Automaticky generovan� stub metody
-		return null;
+			throws SystemUnavailableException, OperationFailed {
+		CopyDataStore copyDataStore = DataStoreFactory.getCopyDataStore();
+		return copyDataStore.findLoanedCopiesForPatronId(patron.getId());
 	}
 
 	@Override
 	public void update(Patron patron) throws SystemUnavailableException,
 			OperationFailed, PatronNotFound, PatronExists {
-		// TODO co kdyz se pokousi updatovat validni hodnotu na nevalidni
 		Connection connection = null;
 		PreparedStatement statementUpdate = null;
 

@@ -65,6 +65,7 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 	
 	private static final String SQL_RENEW = "UPDATE LIBRARY.ONLOAN SET "
 		+ "due_date = ? WHERE item_key = ? AND copy_number = ?";
+	//TODO updatovat times renewed
 
 	private static final String SQL_UPDATE = "UPDATE LIBRARY.COPY SET "
 			+ "first_name = ?, last_name = ?, password = ? WHERE patron_id = ?";
@@ -76,6 +77,11 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 	@Override
 	public void add(Copy copy) {
+		//1. exituje itemID?, 2.jake bude copy number
+		//nejdrive najit max copy number pro dane itemID
+		//sql vyjimka spatne itemID (neexistujici)
+		
+		//loanable true, due nic, patron id nic, times renewed nic
 		// TODO Automaticky generovan� stub metody
 
 	}
@@ -160,10 +166,11 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 			// get list of copies
 			try {
-				statementFind.setObject(1, id);
+				statementFind.setInt(1, id);
 				resultSet = statementFind.executeQuery();
 				mapLoanedCopies(resultSet, copies);
 			} catch (SQLException e) {
+				//TODO pridat vyjimku Patron nenalezen
 				e.printStackTrace();
 				throw new OperationFailed(e);
 			}
@@ -192,12 +199,12 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 	@Override
 	public void remove(Copy copy) {
-		// TODO Automaticky generovan� stub metody
+		// TODO smazat take z tabulky onloan
 
 	}
 
 	@Override
-	public void renewCopy(Copy copy, Date dueDate) throws CopyNotFound,
+	public void renewCopy(Copy copy, java.sql.Date dueDate) throws CopyNotFound,
 			OperationFailed, SystemUnavailableException {
 		Connection connection = null;
 		PreparedStatement statementUpdate = null;
@@ -209,7 +216,9 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 			// do the update
 			try {
-				//TODO populateStatementForUpdate(statementUpdate, patron);
+				statementUpdate.setDate(1, dueDate);
+				statementUpdate.setInt(2, copy.getItemId());
+				statementUpdate.setInt(3, copy.getCopyNumber());
 				int affectedRows = statementUpdate.executeUpdate();
 				System.out.println("affectedRows: " + affectedRows);
 				if (affectedRows == 0) {
@@ -247,11 +256,7 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 		while (rs.next()) {
 			isLoanable = rs.getString(3).equalsIgnoreCase("T");
 			dueSql = rs.getDate(6);
-			if (rs.wasNull()) {
-				dueUtil = null;
-			} else {
-				dueUtil = new Date(dueSql.getTime());
-			}
+			dueUtil = (dueSql == null) ? null: new Date(dueSql.getTime());
 			itemId = rs.getInt(1);
 			patronId = rs.getInt(4);
 			timesRenewed = rs.getInt(5);
@@ -281,11 +286,7 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 			author = rs.getString(3);
 			title = rs.getString(4);
 			dueSql = rs.getDate(5);
-			if (rs.wasNull()) {
-				dueUtil = null;
-			} else {
-				dueUtil = new Date(dueSql.getTime());
-			}
+			dueUtil = (dueSql == null) ? null: new Date(dueSql.getTime());
 			timesRenewed = rs.getInt(6);
 
 			loanCopy = new LoanedCopy(author, title, copyNumber, dueUtil,

@@ -20,7 +20,7 @@ public class Patron implements Serializable {
 	private String firstName;
 	private String lastName;
 	private String email;
-	private String password;
+	private String password;// TODO to heslo tu asi nema byt?
 	private static PatronDataStore dataStore;
 
 	static {
@@ -60,19 +60,19 @@ public class Patron implements Serializable {
 
 	}
 
-	public Patron findByEmail(String email) throws PatronNotFound,
+	public static Patron findByEmail(String email) throws PatronNotFound,
 			SystemUnavailableException, OperationFailed {
-		return null;
+		return dataStore.findByEmail(email);
 	}
 
-	public Patron findById(int id) throws PatronNotFound,
+	public static Patron findById(int id) throws PatronNotFound,
 			SystemUnavailableException, OperationFailed {
 		return dataStore.findById(id);
 	}
 
 	public Collection<Copy> getCopies(Patron patron)
-			throws SystemUnavailableException {
-		return null;
+			throws SystemUnavailableException, OperationFailed {
+		return dataStore.getCopies(patron);
 	}
 
 	public void remove(Patron patron) throws PatronNotFound,
@@ -81,8 +81,8 @@ public class Patron implements Serializable {
 	}
 
 	public Collection<LoanedCopy> retriveLoanedCopies(Patron patron)
-			throws SystemUnavailableException {
-		return null;
+			throws SystemUnavailableException, OperationFailed {// TODO static?
+		return dataStore.retriveLoanedCopies(patron);
 	}
 
 	public void update(Patron patron) throws SystemUnavailableException,
@@ -90,23 +90,33 @@ public class Patron implements Serializable {
 		dataStore.update(patron);
 	}
 
-	public static void verifyLogon(String email, String password) {
-		// vola metodu findByEmail, selhani loginu se pozna podle vyjimek
-		// ktery haze findByEmail
+	public static void verifyLogon(String email, String password)
+			throws SystemUnavailableException, OperationFailed, PatronNotFound,
+			InvalidPassword {
+
+		try {
+			// check if patron exists
+			Patron patron = findByEmail(email);
+			// patron exists, check the password
+			if (!patron.getPassword().equals(password)) {
+				throw new InvalidPassword("Password is not correct");
+			}
+		} catch (PatronNotFound e) {
+			throw e;
+		}
+
 	}
 
-	public void renew(Collection<LoanedCopy> list) {
-		// vola dalsi metody, vysledkem je upraveny objekt LoanedCopy
-		// (renewAccomplished, renewMessage, timesRenewed)
-		
+	public void renew(Collection<LoanedCopy> list) throws OperationFailed,
+			SystemUnavailableException {
+
 		for (LoanedCopy loanedCopy : list) {
 			if (loanedCopy.isRenewRequest()) {
-				//TODO
+				loanedCopy.renew();
 			}
 		}
 	}
 
-	
 	private void verifyPassword() throws InvalidPassword {
 		String password = getPassword();
 		// password shouldn't be empty or null
@@ -115,12 +125,12 @@ public class Patron implements Serializable {
 		}
 
 		// password shouldn't contain any blank
-		for(int i = 0; i < password.length(); i++){
-            if(Character.isWhitespace(password.charAt(i))){
-            	throw new InvalidPassword(
-				"Password contains one or more blank characters");
-            }
-        }
+		for (int i = 0; i < password.length(); i++) {
+			if (Character.isWhitespace(password.charAt(i))) {
+				throw new InvalidPassword(
+						"Password contains one or more blank characters");
+			}
+		}
 
 		// password must be at least 5 characters long
 		if (password.length() < MIN_PASSWORD_LENGTH) {

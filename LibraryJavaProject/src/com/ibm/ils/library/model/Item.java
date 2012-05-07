@@ -1,146 +1,155 @@
 package com.ibm.ils.library.model;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 
 import com.ibm.ils.library.datastore.DataStoreFactory;
 import com.ibm.ils.library.datastore.ItemDataStore;
+import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
+import com.ibm.ils.library.model.exceptions.ItemExists;
+import com.ibm.ils.library.model.exceptions.ItemNotFound;
+import com.ibm.ils.library.model.exceptions.OperationFailed;
 
 public class Item implements Serializable {
-  private static final long serialVersionUID = 1829130523855209126L;
+	private static final long serialVersionUID = 1829130523855209126L;
 
-  /**
-   * Medium values (UNKNOWN = '?', BOOK = 'B', CD = 'C', AUDIO = 'A', TAPE =
-   * 'T', DVD = 'D').
-   */
-  private final static String MEDIUMS = "BCATD";
-  private final static char UNKNOWN = '?'; //TODO asi nepovolena hodnota
-  /*
-   * @SuppressWarnings("serial") static final Map<String , String> MEDIUMS = new
-   * HashMap<String , String>() {{ put("Up", "Down"); put("Charm", "Strange");
-   * put("Top", "Bottom"); }};
-   * 
-   * public final static char UNKWON = '?'; public final static char BOOK = 'B';
-   * public final static char CD = 'C'; public final static char AUDIO = 'A';
-   * public final static char VTAPE = 'T'; public final static char DVD = 'D';
-   */
+	private int id;
 
-  private int id;
+	private char medium;
 
-  private char medium;
+	private String isbnEquivalent;
 
-  private String isbnEquivalent;
+	private String title;
 
-  private String title;
+	private String author;
 
-  private String author;
+	private boolean oversize;
 
-  private boolean oversize;
+	private Integer volumes;//TODO predelat na Integer
 
-  private int volumes;
+	private Date published;
 
-  private Date published;
+	private static ItemDataStore dataStore;
 
-  private static ItemDataStore dataStore;
+	static {
+		dataStore = DataStoreFactory.getItemDataStore();
+	}
 
-  static {
-    dataStore = DataStoreFactory.getItemDataStore();
-  }
+	public Item() {
+		this('?', "", "", "", false, 1, null);
+	}
 
-  public Item() {
-    this(UNKNOWN, "", "", "", false, 1, null);
-  }
+	public Item(char medium, String isbnEquivalent, String title,
+			String author, boolean oversize, int volumes, Date published) {
+		this(0, medium, isbnEquivalent, title, author, oversize, volumes,
+				published);
+	}
 
-  public Item(char medium, String isbnEquivalent, String title, String author,
-      boolean oversize, int volumes, Date published) {
-    this(0, medium, isbnEquivalent, title, author, oversize, volumes, published);
-  }
+	public Item(int id, char medium, String isbnEquivalent, String title,
+			String author, boolean oversize, Integer volumes, Date published) {
+		super();
+		this.id = id;
+		this.medium = medium;
+		this.isbnEquivalent = isbnEquivalent;
+		this.title = title;
+		this.author = author;
+		this.oversize = oversize;
+		this.volumes = volumes;
+		this.published = published;
+	}
 
-  public Item(int id, char medium, String isbnEquivalent, String title,
-      String author, boolean oversize, int volumes, Date published) {
-    super();
-    this.id = id;
-    this.medium = medium;
-    this.isbnEquivalent = isbnEquivalent;
-    this.title = title;
-    this.author = author;
-    this.oversize = oversize;
-    this.volumes = volumes;
-    this.published = published;
-  }
-  
-  //TODO volani metod datastore
+	// TODO volani metod datastore
+	public void add(Item item) throws SystemUnavailableException,
+			OperationFailed, ItemExists {
+		dataStore.add(item);
+	}
 
-  public int getId() {
-    return id;
-  }
+	public static Item findById(int id) throws SystemUnavailableException,
+			OperationFailed, ItemNotFound {
+		return dataStore.findById(id);
+	}
 
-  public void setId(int id) {
-    this.id = id;
-  }
+	public Collection<Copy> getCopies(Item item) {
+		return null;
+	}
 
-  public char getMedium() {
-    return medium;
-  }
+	public void remove(Item item) throws SystemUnavailableException,
+			OperationFailed, ItemNotFound {
+		dataStore.remove(item);
+	}
 
-  public void setMedium(char medium) {
-    //TODO neresit tady, ale pri validaci
-    String value = String.valueOf(medium).toUpperCase();
-    int index = MEDIUMS.indexOf(value);
-    if (index < 0) {
-      medium = '?';
-    }
-    this.medium = medium;
-  }
+	public void update(Item item) throws SystemUnavailableException,
+			ItemNotFound, OperationFailed {
+		dataStore.update(item);
+	}
+	
+	//
+	// Getters and setters
+	//
 
-  public String getIsbnEquivalent() {
-    return isbnEquivalent;
-  }
+	public int getId() {
+		return id;
+	}
 
-  public void setIsbnEquivalent(String isbnEquivalent) {
-    this.isbnEquivalent = isbnEquivalent;
-  }
+	public void setId(int id) {
+		this.id = id;
+	}
 
-  public String getTitle() {
-    return title;
-  }
+	public char getMedium() {
+		return medium;
+	}
 
-  public void setTitle(String title) {
-    this.title = title;
-  }
+	public void setMedium(char medium) {
+		this.medium = medium;
+	}
 
-  public String getAuthor() {
-    return author;
-  }
+	public String getIsbnEquivalent() {
+		return isbnEquivalent;
+	}
 
-  public void setAuthor(String author) {
-    this.author = author;
-  }
+	public void setIsbnEquivalent(String isbnEquivalent) {
+		this.isbnEquivalent = isbnEquivalent;
+	}
 
-  public boolean isOversize() {
-    return oversize;
-  }
+	public String getTitle() {
+		return title;
+	}
 
-  public void setOversize(boolean oversize) {
-    this.oversize = oversize;
-  }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-  public int getVolume() {
-    return volumes;
-  }
+	public String getAuthor() {
+		return author;
+	}
 
-  public void setVolume(int volume) {
-    this.volumes = volume;
-  }
+	public void setAuthor(String author) {
+		this.author = author;
+	}
 
-  public Date getPublished() {
-    return published;
-  }
+	public boolean isOversize() {
+		return oversize;
+	}
 
-  public void setPublished(Date published) {
-    this.published = published;
-  }
-  
-  
+	public void setOversize(boolean oversize) {
+		this.oversize = oversize;
+	}
+
+	public Integer getVolume() {
+		return volumes;
+	}
+
+	public void setVolume(Integer volume) {
+		this.volumes = volume;
+	}
+
+	public Date getPublished() {
+		return published;
+	}
+
+	public void setPublished(Date published) {
+		this.published = published;
+	}
 
 }

@@ -18,8 +18,8 @@ public class DataSourceConnection implements BuildConnection {
 	public DataSourceConnection(String ctxFactory, String dataSource,
 			Properties info) {
 		// TODO Automaticky generovaný stub konstruktoru
-		//ctxFactory = "com.sun.jndi.ldap.LdapCtxFactory";
-		//dataSource = "java:comp/env/ejbDB";
+		//ctxFactory = "com.ibm.websphere.naming.WsnInitialContextFactory";
+		//dataSource = "java:comp/env/jdbc/library";
 		this.info = info;
 
 		Hashtable<String, String> env = new Hashtable<String, String>();
@@ -29,6 +29,7 @@ public class DataSourceConnection implements BuildConnection {
 		try {
 			Context ctx = new InitialContext(env);
 			this.source = (javax.sql.DataSource) ctx.lookup(dataSource);
+			System.out.println(this.source.toString());
 		} catch (NamingException e) {
 			// TODO Automaticky generovaný blok catch
 			e.printStackTrace();
@@ -40,8 +41,8 @@ public class DataSourceConnection implements BuildConnection {
 	public Connection getConnection() throws SQLException {
 		String username = info.getProperty("username");
 		String password = info.getProperty("password");
-		//return source.getConnection(username, password);
-		return source.getConnection();
+		return source.getConnection(username, password);
+		//return source.getConnection();
 	}
 
 }

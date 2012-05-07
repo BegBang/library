@@ -96,9 +96,10 @@ public interface PatronDataStore {
 	 * @return collection of copies (LoanedCopy objects) loaned by the patron
 	 * @throws SystemUnavailableException
 	 *             if an unspecified error during execution SQL statement occurs
+	 * @throws OperationFailed 
 	 */
 	public Collection<LoanedCopy> retriveLoanedCopies(Patron patron)
-			throws SystemUnavailableException;
+			throws SystemUnavailableException, OperationFailed;
 
 	/**
 	 * Update the patron.

@@ -10,15 +10,20 @@ import com.ibm.ils.library.model.exceptions.ItemNotFound;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
 
 public interface ItemDataStore {
-	
-	public void add(Item item) throws SystemUnavailableException, OperationFailed, ItemExists;
-	
-	public Item findById(int id) throws SystemUnavailableException, OperationFailed, ItemNotFound;
-	
-	public Collection<Copy> getCopies(Item item);
-	
-	public void remove(Item item) throws SystemUnavailableException, OperationFailed, ItemNotFound;
-	
-	public void update(Item item) throws SystemUnavailableException, ItemNotFound, OperationFailed;
+
+	public void add(Item item) throws SystemUnavailableException,
+			OperationFailed, ItemExists;
+
+	public Item findById(int id) throws SystemUnavailableException,
+			OperationFailed, ItemNotFound;
+
+	public Collection<Copy> getCopies(Item item) throws OperationFailed,
+			SystemUnavailableException;
+
+	public void remove(Item item) throws SystemUnavailableException,
+			OperationFailed, ItemNotFound;
+
+	public void update(Item item) throws SystemUnavailableException,
+			ItemNotFound, OperationFailed;
 
 }

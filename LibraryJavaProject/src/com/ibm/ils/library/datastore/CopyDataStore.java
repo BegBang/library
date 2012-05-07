@@ -34,8 +34,8 @@ public interface CopyDataStore {
 
 	public void remove(Copy copy);
 
-	public void renewCopy(Copy copy, Date dueDate) throws CopyNotFound,
-			OperationFailed, SystemUnavailableException;
+	public void renewCopy(Copy copy, java.sql.Date dueDate)
+			throws CopyNotFound, OperationFailed, SystemUnavailableException;
 
 	public void update(Copy copy);
 
