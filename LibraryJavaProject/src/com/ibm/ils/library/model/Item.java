@@ -60,9 +60,9 @@ public class Item implements Serializable {
 	}
 
 	// TODO volani metod datastore
-	public void add(Item item) throws SystemUnavailableException,
+	public void add() throws SystemUnavailableException,
 			OperationFailed, ItemExists {
-		dataStore.add(item);
+		dataStore.add(this);
 	}
 
 	public static Item findById(int id) throws SystemUnavailableException,

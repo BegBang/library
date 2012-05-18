@@ -15,7 +15,8 @@ import com.ibm.ils.library.model.exceptions.PatronNotFound;
 
 public interface CopyDataStore {
 
-	public void add(Copy copy);
+	public void add(Copy copy) throws SystemUnavailableException,
+			OperationFailed;
 
 	public Collection<Copy> findCopiesForItemId(int id) throws OperationFailed,
 			SystemUnavailableException;
@@ -32,11 +33,13 @@ public interface CopyDataStore {
 	public Patron getPatron(Copy copy) throws PatronNotFound,
 			SystemUnavailableException, OperationFailed;
 
-	public void remove(Copy copy);
+	public void remove(Copy copy) throws OperationFailed,
+			SystemUnavailableException, CopyNotFound;
 
 	public void renewCopy(Copy copy, java.sql.Date dueDate)
 			throws CopyNotFound, OperationFailed, SystemUnavailableException;
 
-	public void update(Copy copy);
+	public void update(Copy copy) throws CopyNotFound, OperationFailed,
+			SystemUnavailableException;
 
 }

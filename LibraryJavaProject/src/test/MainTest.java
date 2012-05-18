@@ -2,13 +2,17 @@ package test;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import com.ibm.ils.library.datastore.DataStoreFactory;
 import com.ibm.ils.library.datastore.PatronDataStore;
 import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
 import com.ibm.ils.library.model.Copy;
+import com.ibm.ils.library.model.Item;
 import com.ibm.ils.library.model.LoanedCopy;
 import com.ibm.ils.library.model.Patron;
+import com.ibm.ils.library.model.exceptions.InvalidPassword;
+import com.ibm.ils.library.model.exceptions.ItemExists;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
 import com.ibm.ils.library.model.exceptions.PatronExists;
 import com.ibm.ils.library.model.exceptions.PatronNotFound;
@@ -41,11 +45,10 @@ public class MainTest {
       e1.printStackTrace();
     }*/
 
-		// najdi pomoci id
-		/*PatronDataStore patronDS = DataStoreFactory.getPatronDataStore();
-		Patron patron2 = new Patron();
+		// najdi pomoci id		
+		/*Patron patron2 = null;
 		try {
-			patron2 = patronDS.findById(6);
+			patron2 = Patron.findById(200);
 			System.out.println("Patron2: " +patron2);
 		} catch (SystemUnavailableException e) {
 			// TODO Automaticky generovanï¿½ blok catch
@@ -119,8 +122,8 @@ public class MainTest {
       System.out.println(copy.toString());
     }*/
 	  
-	  
-	  Copy copyX = new Copy();
+	  //list items
+	  /*Copy copyX = new Copy();
     Collection<LoanedCopy> copies = new ArrayList<LoanedCopy>();
     try {
       copies = copyX.findLoanedCopiesForPatronId(2);
@@ -136,7 +139,45 @@ public class MainTest {
     System.out.println("Vypujcene Kopie pro patrona:");
     for (LoanedCopy copy : copies) {
       System.out.println(copy.toString());
-    }
+    }*/
+    
+    //pridani item
+		//Item it = new Item();
+		/*Item it = new Item('C', "isbn1", "title", "author", true, 1, new Date(1));
+		try {
+			it.add();
+		} catch (SystemUnavailableException e) {
+			// TODO Automaticky generovaný blok catch
+			e.printStackTrace();
+		} catch (OperationFailed e) {
+			// TODO Automaticky generovaný blok catch
+			e.printStackTrace();
+		} catch (ItemExists e) {
+			// TODO Automaticky generovaný blok catch
+			e.printStackTrace();
+		}*/
+    
+    //renew
+		
+    
+    
+    //login
+		/*try {
+			Patron.verifyLogon("husa@email.c", "anickaa");
+		} catch (SystemUnavailableException e) {
+			// TODO Automaticky generovaný blok catch
+			e.printStackTrace();
+		} catch (OperationFailed e) {
+			// TODO Automaticky generovaný blok catch
+			e.printStackTrace();
+		} catch (PatronNotFound e) {
+			// TODO Automaticky generovaný blok catch
+			e.printStackTrace();
+		} catch (InvalidPassword e) {
+			// TODO Automaticky generovaný blok catch
+			e.printStackTrace();
+		}*/
+    
 	  
 	}
 

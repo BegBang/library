@@ -233,24 +233,22 @@ public class PatronDataStoreJDBC implements PatronDataStore {
 	 * @return
 	 * @throws SQLException
 	 */
-	private static PreparedStatement populateStatementForAdd(
+	private static void populateStatementForAdd(
 			PreparedStatement statement, Patron patron) throws SQLException {
 		statement.setInt(1, patron.getId());
 		statement.setString(2, patron.getFirstName());
 		statement.setString(3, patron.getLastName());
 		statement.setString(4, patron.getPassword());
 		statement.setString(5, patron.getEmail());
-		return statement;
 	}
 
-	private static PreparedStatement populateStatementForUpdate(
+	private static void populateStatementForUpdate(
 			PreparedStatement statement, Patron patron) throws SQLException {
 		statement.setString(1, patron.getFirstName());
 		statement.setString(2, patron.getLastName());
 		statement.setString(3, patron.getPassword());
 		statement.setString(4, patron.getEmail());
 		statement.setInt(5, patron.getId());
-		return statement;
 	}
 
 }

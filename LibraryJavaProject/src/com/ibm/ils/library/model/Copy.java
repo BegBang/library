@@ -15,7 +15,7 @@ import com.ibm.ils.library.model.exceptions.RenewFailed;
 public class Copy implements Serializable {
 	private static final long serialVersionUID = -1829277270477731043L;
 	private static final int MAX_TIMES_RENEW = 3;
-	private static final long DAYS_TO_RENEW = 28;
+	private static final long DAYS_TO_RENEW = 21;
 	private static final long ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 	private boolean loanable;
@@ -49,6 +49,10 @@ public class Copy implements Serializable {
 		this.patronId = patronId;
 		this.timesRenewed = timesRenewed;
 		this.copyNumber = copyNumber;
+	}
+	
+	public void add() throws SystemUnavailableException, OperationFailed {
+		datastore.add(this);
 	}
 
 	public Collection<Copy> findCopiesForPatronId(int id)

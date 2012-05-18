@@ -50,7 +50,10 @@ public class DataStoreFactory {
 	private static void loadProperties(String filename) {
 		InputStream inputStream = DataStoreFactory.class.getClassLoader()
 				.getResourceAsStream(PROPERTIES_FILE);
-		
+		System.out.println(DataStoreFactory.class.getClassLoader().getResource(".").getFile());
+
+//TODO on url	
+		//TODO nesikovna chybova hlaska hlasi missing i kdyz je soubor exists
 		if (inputStream == null) {
 			processError(filename);
 		}
