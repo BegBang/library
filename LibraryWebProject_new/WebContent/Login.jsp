@@ -18,8 +18,8 @@
 <form method="post" action="Login">
 	<table>
 		<tr>
-			<td>Patron ID:</td>
-			<td><input type="text" id="patron_id" name="patron_id" /></td>
+			<td>Email:</td>
+			<td><input type="text" id="patron_email" name="patron_email" /></td>
 		</tr>
 		<tr>
 			<td>Password:</td>

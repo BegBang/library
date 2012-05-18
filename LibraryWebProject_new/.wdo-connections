@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connections:connections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:connections="http://www.ibm.com/websphere/wdo/connections">
+  <connection id="LIBRARY">
+    <development xsi:type="connections:rsc-live-connection" id="LIBRARY_dev" name="LIBRARY"/>
+    <runtime xsi:type="connections:datasource-connection" auto-deploy="true" class-location="C:\Program Files\IBM\SDPShared\plugins\com.ibm.datatools.db2_2.1.102.v20100715_2051\driver\db2jcc.jar;C:\Program Files\IBM\SDPShared\plugins\com.ibm.datatools.db2_2.1.102.v20100715_2051\driver\db2jcc_license_cisuz.jar" id="LIBRARY_runtime" classname="com.ibm.db2.jcc.DB2ConnectionPoolDataSource" database-name="LIBRARY" jndi-name="jdbc/LIBRARY" port-number="50000" resource-reference-name="LIBRARY" server-name="server1" sql-vendor-type="55" userid="root"/>
+  </connection>
+</connections:connections>

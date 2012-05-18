@@ -3,6 +3,7 @@ package com.ibm.library.servlets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -24,6 +25,7 @@ import com.ibm.library.beans.LoanedCopyListBean;
 @WebServlet("/ProcessListItems")
 public class ProcessListItems extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private static final String LoanedCopy = null;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -56,6 +58,7 @@ public class ProcessListItems extends HttpServlet {
 		Collection<LoanedCopy> loanedCopyList = null;
 		try {
 			loanedCopyList = copyX.findLoanedCopiesForPatronId(patronId);
+			request.setAttribute("copyList", loanedCopyList);
 		} catch (SystemUnavailableException e) {
 			showErrorMessage("Error: System is unavailable!", request, response);
 		} catch (OperationFailed e) {
@@ -79,9 +82,24 @@ public class ProcessListItems extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+	@SuppressWarnings("unchecked")
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String[] checkBoxes = request.getParameterValues("renew");
+		
+		Collection<LoanedCopy> loanedCopyList = (Collection<LoanedCopy>)request.getAttribute("copyList");
+		
+		if (checkBoxes != null) {
+			for( String s : checkBoxes ) {
+				Iterator<LoanedCopy> i = loanedCopyList.iterator();
+				for (int a = 1; a < Integer.parseInt(s); a++) {
+					i.next();
+				}
+				LoanedCopy copy = (LoanedCopy)i.next();
+				copy.setRenewRequest(true);
+				System.out.println( "<br />checkBox: "+s );
+			}
+		}
+		
 	}
 
 	private void showErrorMessage(String message, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

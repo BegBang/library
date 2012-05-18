@@ -50,13 +50,13 @@ public class Login extends HttpServlet {
 		HttpSession session = request.getSession(false);
 		
 		try {
-			int patronId = Integer.parseInt(request.getParameter("patron_id"));
+			String patronEmail = request.getParameter("patron_email");
 			String patronPassword = request.getParameter("password");
 			
-			Patron p = Patron.findById(patronId);
+			Patron p = Patron.findByEmail(patronEmail);
 			
 			if (p.getPassword().equals(patronPassword)) {
-				session.setAttribute("patron", patronId);
+				session.setAttribute("patron", p.getId());
 				session.setAttribute("info", "You have been logged!");
 				
 				response.sendRedirect("Default");

@@ -16,24 +16,28 @@
 	<% if (request.getAttribute("error") != null) {
 		out.print("<p>" + request.getAttribute("error") + "</p>");
 	} %>
-
+<form method="post">
 	<table width="100%" border="1" cellpadding="0" cellspacing="1">
 		<tbody>
 			<tr>
+				<th>Renew</th>
 				<th>Author</th>
 				<th>Title</th>
 				<th>Copy</th>
 				<th>Due date</th>
 			</tr>
-			<c:forEach var="item" items="${listitems.loanedCopyList}">
+			<c:forEach var="item" items="${listitems.loanedCopyList}" varStatus="rowCounter">
 				<tr>
+					<td><input type="checkbox" value="${rowCounter.count}" name="renew" /></td>
 					<td>${item.author}</td>
 					<td>${item.title}</td>
 					<td>${item.copyNumber}</td>
 					<td>${item.due}</td>
 				</tr>
 			</c:forEach>
+			<tr><td><input type="submit" value="Renew" /></td></tr>
 		</tbody>
 	</table>
+</form>
 </body>
 </html>
