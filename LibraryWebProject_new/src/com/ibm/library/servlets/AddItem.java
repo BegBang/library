@@ -74,7 +74,7 @@ public class AddItem extends HttpServlet {
 		item.setIsbnEquivalent(isbn);
 		
 		try {
-			item.add(item);
+			item.add();
 		} catch (SystemUnavailableException e) {
 			showErrorMessage("AddItem failure: System is unavailable!", request, response);
 		} catch (OperationFailed e) {
