@@ -20,28 +20,24 @@ import com.ibm.ils.library.model.Copy;
 import com.ibm.ils.library.model.Item;
 import com.ibm.ils.library.model.LoanedCopy;
 import com.ibm.ils.library.model.Patron;
+import com.ibm.ils.library.model.exceptions.CopyExists;
 import com.ibm.ils.library.model.exceptions.CopyNotFound;
 import com.ibm.ils.library.model.exceptions.ItemNotFound;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
-import com.ibm.ils.library.model.exceptions.PatronExists;
 import com.ibm.ils.library.model.exceptions.PatronNotFound;
 
 public class CopyDataStoreJDBC implements CopyDataStore {
 	private ConnectionFactory factory;
 
 	private static final String SQLSTATE_ALREADY_EXISTS = "23505";
+	private static final String SQLSTATE_INVALID_FOREIGN_KEY = "23503";
 
 	private static final String SQL_ADD = "INSERT INTO LIBRARY.COPY "
-			+ "(item_key, copy_number, loanable) VALUES (?, ?, ?)";
+			+ "(item_key, copy_number, loanable) VALUES (?, ?, ?)";	
 
-	// TODO otestovat
-	private static final String SQL_FIND_COPIES_FOR_ITEM_ID = "SELECT "
-			+ "COPY.item_key, COPY.copy_number, COPY.loanable, "
-			+ "ONLOAN.patron_id, ONLOAN.times_renewed, ONLOAN.due_date "
-			+ "FROM LIBRARY.COPY COPY, LIBRARY.ONLOAN ONLOAN "
-			+ "WHERE COPY.item_key = ? "
-			+ "AND COPY.copy_number = ONLOAN.copy_number "
-			+ "AND COPY.item_key = ONLOAN.item_key";
+	private static final String SQL_FIND_COPIES_FOR_ITEM_ID = "SELECT " +
+			"COPY.item_key, COPY.copy_number, COPY.loanable, 0, 0, null " +
+			"FROM LIBRARY.COPY COPY WHERE COPY.item_key = ?";
 
 	private static final String SQL_FIND_COPIES_FOR_PATRON_ID = "SELECT "
 			+ "COPY.item_key, COPY.copy_number, COPY.loanable, "
@@ -72,15 +68,14 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 			+ "WHERE patron_id = ? AND item_key = ? AND copy_number = ?";
 
 	private static final String SQL_RENEW = "UPDATE LIBRARY.ONLOAN SET "
-			+ "due_date = ? WHERE item_key = ? AND copy_number = ?";// TODO
-																	// patron_id
-	// TODO updatovat times renewed
+			+ "due_date = ?, times_renewed = ? "
+			+ "WHERE patron_id = ? AND item_key = ? AND copy_number = ?";
 
 	private static final String SQL_UPDATE_COPY = "UPDATE LIBRARY.COPY SET "
 			+ "loanable = ? WHERE item_key = ? AND copy_number = ?";
 
 	private static final String SQL_UPDATE_ONLOAN = "UPDATE LIBRARY.ONLOAN SET "
-			+ "times_renewed = ? due_date = ? "
+			+ "times_renewed = ?, due_date = ? "
 			+ "WHERE patron_id = ? AND item_key = ? AND copy_number = ?";
 
 	// TODO update spolecne s onloan: ano, tzn. 2 update prikazy
@@ -93,13 +88,12 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 	}
 
 	@Override
-	// nepredpokladam konkurenci
 	public void add(Copy copy) throws SystemUnavailableException,
-			OperationFailed {
+			OperationFailed, CopyExists {
 
-		// loanable true, due nic, patron id nic, times renewed nic
 		Connection connection = null;
 		PreparedStatement statementInsert = null;
+		int nextId = 0;
 
 		// get the add prepared statement
 		try {
@@ -107,19 +101,23 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 			// do the add
 			try {
-				int nextId = findMaxCopyNumber(copy.getItemId(), connection);
+				// get next id
+				nextId = findMaxCopyNumber(copy.getItemId(), connection) + 1;
+				// add copy to database
 				statementInsert = connection.prepareStatement(SQL_ADD);
-				statementInsert.setInt(1, copy.getItemId());// TODO
+				statementInsert.setInt(1, copy.getItemId());
 				statementInsert.setInt(2, nextId);
-				statementInsert.setBoolean(3, true);
+				statementInsert.setString(3, "T");
 				statementInsert.executeUpdate();
 			} catch (SQLException e) {
 				if (e.getSQLState().equals(SQLSTATE_ALREADY_EXISTS)) {
-					// TODO
+					throw new CopyExists(copy.getItemId(), nextId);
+				} else if (e.getSQLState().equals(SQLSTATE_INVALID_FOREIGN_KEY)) {
+					throw new OperationFailed("Item with id: "
+							+ copy.getItemId() + " doesn't exists.");
 				} else {
 					throw new OperationFailed(e);
 				}
-				// TODO kdyz odkazovany item id neexistuje
 			}
 		} catch (SQLException e) {
 			throw new SystemUnavailableException(e);
@@ -151,8 +149,6 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 			}
 		} catch (SQLException e) {
 			throw new SystemUnavailableException(e);
-		} finally {
-			close(null, statementFindMax, connection);
 		}
 		return max;
 	}
@@ -284,20 +280,24 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 			// do the delete
 			try {
-				// execute remove onloan
-				stRemoveOnloan.setInt(1, copy.getPatronId());
-				stRemoveOnloan.setInt(2, copy.getItemId());
-				stRemoveOnloan.setInt(3, copy.getCopyNumber());
-				stRemoveOnloan.executeUpdate();
-				
+				// execute remove onloan if patron_id is set
+				if (copy.getPatronId() > 0) {
+					stRemoveOnloan.setInt(1, copy.getPatronId());
+					stRemoveOnloan.setInt(2, copy.getItemId());
+					stRemoveOnloan.setInt(3, copy.getCopyNumber());
+					stRemoveOnloan.executeUpdate();
+				}
+
 				// execute remove copy
 				stRemoveCopy.setInt(1, copy.getItemId());
 				stRemoveCopy.setInt(2, copy.getCopyNumber());
 				int affectedRows = stRemoveCopy.executeUpdate();
 				if (affectedRows == 0) {
-					throw new CopyNotFound(copy.getItemId(), copy.getCopyNumber());
+					throw new CopyNotFound(copy.getItemId(),
+							copy.getCopyNumber());
 				}
 			} catch (SQLException e) {
+				e.printStackTrace();
 				throw new OperationFailed(e);
 			}
 
@@ -305,12 +305,13 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 			throw new SystemUnavailableException(e);
 		} finally {
 			close(null, stRemoveOnloan, connection);
+			close(null, stRemoveCopy, connection);
 		}
 
 	}
 
 	@Override
-	public void renewCopy(Copy copy, java.sql.Date dueDate)
+	public void renewCopy(Copy copy, java.sql.Date dueDate, int timesRenewed)
 			throws CopyNotFound, OperationFailed, SystemUnavailableException {
 		Connection connection = null;
 		PreparedStatement statementUpdate = null;
@@ -323,10 +324,11 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 			// do the update
 			try {
 				statementUpdate.setDate(1, dueDate);
-				statementUpdate.setInt(2, copy.getItemId());
-				statementUpdate.setInt(3, copy.getCopyNumber());
+				statementUpdate.setInt(2, timesRenewed);
+				statementUpdate.setInt(3, copy.getPatronId());
+				statementUpdate.setInt(4, copy.getItemId());
+				statementUpdate.setInt(5, copy.getCopyNumber());
 				int affectedRows = statementUpdate.executeUpdate();
-				System.out.println("affectedRows: " + affectedRows);
 				if (affectedRows == 0) {
 					throw new CopyNotFound(copy.getItemId(),
 							copy.getCopyNumber());
@@ -358,16 +360,21 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 			// do the update
 			try {
-				// execute update onloan (if exists)
-				populateStatementForUpdateOnloan(stUpdateOnloan, copy);
-				
+				if (copy.getPatronId() > 0) {
+					// execute update onloan (if exists)
+					populateStatementForUpdateOnloan(stUpdateOnloan, copy);
+					stUpdateOnloan.executeUpdate();
+				}
+
 				// execute update copy (exists or error)
 				populateStatementForUpdateCopy(stUpdateCopy, copy);
 				int affectedRows = stUpdateCopy.executeUpdate();
 				if (affectedRows == 0) {
-					throw new CopyNotFound(copy.getItemId(), copy.getCopyNumber());
+					throw new CopyNotFound(copy.getItemId(),
+							copy.getCopyNumber());
 				}
 			} catch (SQLException e) {
+				e.printStackTrace();
 				throw new OperationFailed(e);
 			}
 
@@ -375,22 +382,26 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 			throw new SystemUnavailableException(e);
 		} finally {
 			close(null, stUpdateOnloan, connection);
+			close(null, stUpdateCopy, connection);
 		}
 
 	}
-	
+
 	private static void populateStatementForUpdateOnloan(
-			PreparedStatement statement, Copy copy) throws SQLException {		
+			PreparedStatement statement, Copy copy) throws SQLException {
 		statement.setInt(1, copy.getTimesRenewed());
-		statement.setDate(2, new java.sql.Date(copy.getDue().getTime()));
+		java.sql.Date date = (copy.getDue() != null) ? new java.sql.Date(copy
+				.getDue().getTime()) : null;
+		statement.setDate(2, date);
 		statement.setInt(3, copy.getPatronId());
 		statement.setInt(4, copy.getItemId());
-		statement.setInt(5, copy.getCopyNumber());	
+		statement.setInt(5, copy.getCopyNumber());
 	}
-	
+
 	private static void populateStatementForUpdateCopy(
 			PreparedStatement statement, Copy copy) throws SQLException {
-		statement.setBoolean(1, copy.isLoanable());
+		String value = copy.isLoanable() ? "T" : "F";
+		statement.setString(1, value);
 		statement.setInt(2, copy.getItemId());
 		statement.setInt(3, copy.getCopyNumber());
 	}

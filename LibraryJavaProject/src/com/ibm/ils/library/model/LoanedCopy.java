@@ -52,8 +52,8 @@ public class LoanedCopy {
 		this.timesRenewed = timesRenewed;
 	}
 
-	public void renew() throws OperationFailed, SystemUnavailableException {
-		Copy copy = new Copy(false, getDue(), getItemId(), -1,
+	public void renew(int patron_id) throws OperationFailed, SystemUnavailableException {
+		Copy copy = new Copy(false, getDue(), getItemId(), patron_id,
 				getTimesRenewed(), getCopyNumber());
 		
 		try {
@@ -68,7 +68,7 @@ public class LoanedCopy {
 			setRenewMessage("Renew failed");
 		}  catch (RenewFailed e) {
 			setRenewAccomplished(false);
-			setRenewMessage("Renew failed");
+			setRenewMessage("Renew failed: " + e.getMessage());
 		}
 	}
 
@@ -147,7 +147,7 @@ public class LoanedCopy {
 	@Override
 	public String toString() {
 		return String
-				.format("Copy[author=%s, title=%s, copyNumber=%d, due=%s, itemId=%d, renewAccomplished=%s, renewMessage=%s, renewRequest=%s, timesRenewed=%d]",
+				.format("LoanedCopy[author=%s, title=%s, copyNumber=%d, due=%s, itemId=%d, renewAccomplished=%s, renewMessage=%s, renewRequest=%s, timesRenewed=%d]",
 						author, title, copyNumber, due, itemId,
 						renewAccomplished, renewMessage, renewRequest,
 						timesRenewed);

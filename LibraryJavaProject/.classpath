@@ -18,5 +18,6 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/IBM/WebSphere/AppServer/runtimes/com.ibm.ws.admin.client_8.0.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

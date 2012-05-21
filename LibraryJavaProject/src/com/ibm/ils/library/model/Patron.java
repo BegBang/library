@@ -20,7 +20,7 @@ public class Patron implements Serializable {
 	private String firstName;
 	private String lastName;
 	private String email;
-	private String password;// TODO to heslo tu asi nema byt?
+	private String password;
 	private static PatronDataStore dataStore;
 
 	static {
@@ -70,49 +70,31 @@ public class Patron implements Serializable {
 		return dataStore.findById(id);
 	}
 
-	public Collection<Copy> getCopies(Patron patron)
+	public Collection<Copy> getCopies() throws SystemUnavailableException,
+			OperationFailed {
+		return dataStore.getCopies(this);
+	}
+
+	public void remove() throws PatronNotFound, SystemUnavailableException,
+			OperationFailed {
+		dataStore.remove(this);
+	}
+
+	public Collection<LoanedCopy> retriveLoanedCopies()
 			throws SystemUnavailableException, OperationFailed {
-		return dataStore.getCopies(patron);
+		return dataStore.retriveLoanedCopies(this);
 	}
 
-	public void remove(Patron patron) throws PatronNotFound,
-			SystemUnavailableException, OperationFailed {
-		dataStore.remove(patron);
-	}
-
-	public Collection<LoanedCopy> retriveLoanedCopies(Patron patron)
-			throws SystemUnavailableException, OperationFailed {// TODO static?
-		return dataStore.retriveLoanedCopies(patron);
-	}
-
-	public void update(Patron patron) throws SystemUnavailableException,
-			OperationFailed, PatronNotFound, PatronExists {
-		dataStore.update(patron);
-	}
-
-	public static void verifyLogon(String email, String password)
-			throws SystemUnavailableException, OperationFailed, PatronNotFound,
-			InvalidPassword {
-
-		try {
-			// check if patron exists
-			Patron patron = findByEmail(email);
-			// patron exists, check the password
-			if (!patron.getPassword().equals(password)) {
-				throw new InvalidPassword("Password is not correct");
-			}
-		} catch (PatronNotFound e) {
-			throw e;
-		}
-
-	}
+	public void update() throws SystemUnavailableException, OperationFailed,
+			PatronNotFound, PatronExists {
+		dataStore.update(this);
+	}	
 
 	public void renew(Collection<LoanedCopy> list) throws OperationFailed,
 			SystemUnavailableException {
-
 		for (LoanedCopy loanedCopy : list) {
 			if (loanedCopy.isRenewRequest()) {
-				loanedCopy.renew();
+				loanedCopy.renew(getId());
 			}
 		}
 	}

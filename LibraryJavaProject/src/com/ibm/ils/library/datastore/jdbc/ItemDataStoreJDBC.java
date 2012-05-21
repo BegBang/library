@@ -188,11 +188,12 @@ public class ItemDataStoreJDBC implements ItemDataStore {
 		} else {
 			oversize = false;
 		}
-		Integer volumes = (Integer)rs.getObject(7);
+		Integer volumes = (Integer) rs.getObject(7);
 		java.sql.Date publishedSql = rs.getDate(8);
 		java.util.Date published;
-		published = (publishedSql == null) ? null: new Date(publishedSql.getTime());
-		
+		published = (publishedSql == null) ? null : new Date(
+				publishedSql.getTime());
+
 		return new Item(id, medium, isbnEquivalent, title, author, oversize,
 				volumes, published);
 	}
@@ -212,7 +213,9 @@ public class ItemDataStoreJDBC implements ItemDataStore {
 		}
 		statement.setString(6, size);
 		statement.setObject(7, item.getVolume());
-		statement.setDate(8, new java.sql.Date(item.getPublished().getTime()));
+		java.sql.Date published = (item.getPublished() == null) ? null
+				: new java.sql.Date(item.getPublished().getTime());
+		statement.setDate(8, published);
 		return statement;
 	}
 
@@ -230,7 +233,9 @@ public class ItemDataStoreJDBC implements ItemDataStore {
 		}
 		statement.setString(5, size);
 		statement.setObject(6, item.getVolume());
-		statement.setDate(7, new java.sql.Date(item.getPublished().getTime()));
+		java.sql.Date published = (item.getPublished() == null) ? null
+				: new java.sql.Date(item.getPublished().getTime());
+		statement.setDate(7, published);
 		statement.setInt(8, item.getId());
 		return statement;
 	}

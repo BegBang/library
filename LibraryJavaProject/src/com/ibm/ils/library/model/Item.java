@@ -7,6 +7,7 @@ import java.util.Date;
 import com.ibm.ils.library.datastore.DataStoreFactory;
 import com.ibm.ils.library.datastore.ItemDataStore;
 import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
+import com.ibm.ils.library.datastore.util.LibraryIdGenerator;
 import com.ibm.ils.library.model.exceptions.ItemExists;
 import com.ibm.ils.library.model.exceptions.ItemNotFound;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
@@ -26,8 +27,8 @@ public class Item implements Serializable {
 
 	private boolean oversize;
 
-	private Integer volumes;//TODO predelat na Integer
-
+	private Integer volumes;
+	
 	private Date published;
 
 	private static ItemDataStore dataStore;
@@ -58,10 +59,14 @@ public class Item implements Serializable {
 		this.volumes = volumes;
 		this.published = published;
 	}
+	
+	public void add() throws SystemUnavailableException, OperationFailed,
+			ItemExists {
+		// generate id
+		if (getId() == 0) {
+			setId(LibraryIdGenerator.generateId());
+		}
 
-	// TODO volani metod datastore
-	public void add() throws SystemUnavailableException,
-			OperationFailed, ItemExists {
 		dataStore.add(this);
 	}
 
@@ -70,20 +75,21 @@ public class Item implements Serializable {
 		return dataStore.findById(id);
 	}
 
-	public Collection<Copy> getCopies(Item item) {
-		return null;
+	public Collection<Copy> getCopies() throws OperationFailed,
+			SystemUnavailableException {
+		return dataStore.getCopies(this);
 	}
 
-	public void remove(Item item) throws SystemUnavailableException,
+	public void remove() throws SystemUnavailableException,
 			OperationFailed, ItemNotFound {
-		dataStore.remove(item);
+		dataStore.remove(this);
 	}
 
-	public void update(Item item) throws SystemUnavailableException,
+	public void update() throws SystemUnavailableException,
 			ItemNotFound, OperationFailed {
-		dataStore.update(item);
+		dataStore.update(this);
 	}
-	
+
 	//
 	// Getters and setters
 	//
@@ -150,6 +156,14 @@ public class Item implements Serializable {
 
 	public void setPublished(Date published) {
 		this.published = published;
+	}
+
+	@Override
+	public String toString() {
+		return "Item [id=" + id + ", medium=" + medium + ", isbnEquivalent="
+				+ isbnEquivalent + ", title=" + title + ", author=" + author
+				+ ", oversize=" + oversize + ", volumes=" + volumes
+				+ ", published=" + published + "]";
 	}
 
 }

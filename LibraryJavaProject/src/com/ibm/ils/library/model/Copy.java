@@ -8,8 +8,11 @@ import java.util.Date;
 import com.ibm.ils.library.datastore.CopyDataStore;
 import com.ibm.ils.library.datastore.DataStoreFactory;
 import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
+import com.ibm.ils.library.model.exceptions.CopyExists;
 import com.ibm.ils.library.model.exceptions.CopyNotFound;
+import com.ibm.ils.library.model.exceptions.ItemNotFound;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
+import com.ibm.ils.library.model.exceptions.PatronNotFound;
 import com.ibm.ils.library.model.exceptions.RenewFailed;
 
 public class Copy implements Serializable {
@@ -37,7 +40,6 @@ public class Copy implements Serializable {
 	}
 
 	public Copy() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public Copy(boolean loanable, Date due, int itemId, int patronId,
@@ -50,24 +52,49 @@ public class Copy implements Serializable {
 		this.timesRenewed = timesRenewed;
 		this.copyNumber = copyNumber;
 	}
-	
-	public void add() throws SystemUnavailableException, OperationFailed {
+
+	public void add() throws SystemUnavailableException, OperationFailed,
+			CopyExists {
 		datastore.add(this);
 	}
 
-	public Collection<Copy> findCopiesForPatronId(int id)
+	public static Collection<Copy> findCopiesForItemId(int id)
+			throws OperationFailed, SystemUnavailableException {
+		return datastore.findCopiesForItemId(id);
+	}
+
+	public static Collection<Copy> findCopiesForPatronId(int id)
 			throws SystemUnavailableException, OperationFailed {
 		return datastore.findCopiesForPatronId(id);
 	}
 
-	public Collection<LoanedCopy> findLoanedCopiesForPatronId(int id)
+	public static Collection<LoanedCopy> findLoanedCopiesForPatronId(int id)
 			throws SystemUnavailableException, OperationFailed {
 		return datastore.findLoanedCopiesForPatronId(id);
 	}
 
+	public Item getItem() throws SystemUnavailableException, OperationFailed,
+			ItemNotFound {
+		return datastore.getItem(this);
+	}
+
+	public Patron getPatron() throws PatronNotFound,
+			SystemUnavailableException, OperationFailed {
+		return datastore.getPatron(this);
+	}
+
+	public void remove() throws OperationFailed, SystemUnavailableException,
+			CopyNotFound {
+		datastore.remove(this);
+	}
+
+	public void update() throws CopyNotFound, OperationFailed,
+			SystemUnavailableException {
+		datastore.update(this);
+	}
+
 	public void renew() throws CopyNotFound, OperationFailed,
 			SystemUnavailableException, RenewFailed {
-		Date now = new Date();
 		Date due = getDue();
 
 		Calendar todayCalendar = Calendar.getInstance();
@@ -85,12 +112,13 @@ public class Copy implements Serializable {
 			if (getTimesRenewed() < MAX_TIMES_RENEW) {
 				// renew the book for the standard time
 
-				java.sql.Date newDueDate = new java.sql.Date(now.getTime()
+				int newTimesRenewed = getTimesRenewed() + 1;
+				java.sql.Date newDueDate = new java.sql.Date(due.getTime()
 						+ DAYS_TO_RENEW * ONE_DAY_MS);
-				datastore.renewCopy(this, newDueDate);
+				datastore.renewCopy(this, newDueDate, newTimesRenewed);
 				// update copy due date, times renewed
 				setDue(new Date(newDueDate.getTime()));
-				setTimesRenewed(getTimesRenewed() + 1);
+				setTimesRenewed(newTimesRenewed);
 			} else {
 				throw new RenewFailed("Maximum number of renewals exceeded");
 			}

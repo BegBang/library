@@ -50,10 +50,11 @@ public class DataStoreFactory {
 	private static void loadProperties(String filename) {
 		InputStream inputStream = DataStoreFactory.class.getClassLoader()
 				.getResourceAsStream(PROPERTIES_FILE);
-		System.out.println(DataStoreFactory.class.getClassLoader().getResource(".").getFile());
+		System.out.println(DataStoreFactory.class.getClassLoader()
+				.getResource(".").getFile());
 
-//TODO on url	
-		//TODO nesikovna chybova hlaska hlasi missing i kdyz je soubor exists
+		// TODO on url
+		// TODO nesikovna chybova hlaska hlasi missing i kdyz je soubor exists
 		if (inputStream == null) {
 			processError(filename);
 		}
@@ -112,12 +113,5 @@ public class DataStoreFactory {
 			e.printStackTrace();
 		}
 
-	}
-
-	private static void instantiateFactoryDataSource() {
-		// datasource
-		String ctxFactory = "com.ibm.websphere.naming.WsnInitialContextFactory";
-		String dataSource = "java:comp/env/jdbc/library";
-		// factory = new ConnectionFactory(ctxFactory, dataSource, info);
 	}
 }
