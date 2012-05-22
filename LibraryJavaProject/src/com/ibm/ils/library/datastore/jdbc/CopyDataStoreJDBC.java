@@ -62,7 +62,6 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 
 	private static final String SQL_REMOVE_COPY = "DELETE FROM LIBRARY.COPY "
 			+ "WHERE item_key = ? AND copy_number = ?";
-	// TODO smazat nejdrive onloan
 
 	private static final String SQL_REMOVE_ONLOAN = "DELETE FROM LIBRARY.ONLOAN "
 			+ "WHERE patron_id = ? AND item_key = ? AND copy_number = ?";
@@ -78,10 +77,7 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 			+ "times_renewed = ?, due_date = ? "
 			+ "WHERE patron_id = ? AND item_key = ? AND copy_number = ?";
 
-	// TODO update spolecne s onloan: ano, tzn. 2 update prikazy
-	// identifikace podle: item_key, copy_number v Copy
-	// identifikace podle: item_key, copy_number, patron_id v Onloan
-	// updatovat loanable (Copy), due, timesrenewed (Onloan)
+	
 
 	public CopyDataStoreJDBC(ConnectionFactory factory) {
 		this.factory = factory;
@@ -109,6 +105,7 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 				statementInsert.setInt(2, nextId);
 				statementInsert.setString(3, "T");
 				statementInsert.executeUpdate();
+				copy.setCopyNumber(nextId);
 			} catch (SQLException e) {
 				if (e.getSQLState().equals(SQLSTATE_ALREADY_EXISTS)) {
 					throw new CopyExists(copy.getItemId(), nextId);
@@ -205,7 +202,6 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 				resultSet = statementFind.executeQuery();
 				mapCopies(resultSet, copies);
 			} catch (SQLException e) {
-				e.printStackTrace();
 				throw new OperationFailed(e);
 			}
 		} catch (SQLException e) {
@@ -237,8 +233,6 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 				resultSet = statementFind.executeQuery();
 				mapLoanedCopies(resultSet, copies);
 			} catch (SQLException e) {
-				// TODO pridat vyjimku Patron nenalezen
-				e.printStackTrace();
 				throw new OperationFailed(e);
 			}
 		} catch (SQLException e) {
@@ -374,7 +368,6 @@ public class CopyDataStoreJDBC implements CopyDataStore {
 							copy.getCopyNumber());
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
 				throw new OperationFailed(e);
 			}
 

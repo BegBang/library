@@ -12,6 +12,10 @@ import com.ibm.ils.library.model.exceptions.ItemExists;
 import com.ibm.ils.library.model.exceptions.ItemNotFound;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
 
+/**
+ * Represents an item of library collection.
+ *
+ */
 public class Item implements Serializable {
 	private static final long serialVersionUID = 1829130523855209126L;
 

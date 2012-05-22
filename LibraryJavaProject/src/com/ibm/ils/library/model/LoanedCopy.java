@@ -7,6 +7,10 @@ import com.ibm.ils.library.model.exceptions.CopyNotFound;
 import com.ibm.ils.library.model.exceptions.OperationFailed;
 import com.ibm.ils.library.model.exceptions.RenewFailed;
 
+/**
+ * Represents loaned copy. Useful for view layer.
+ *
+ */
 public class LoanedCopy {
 
 	private String author;

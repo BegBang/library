@@ -5,6 +5,10 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
 
+/**
+ * Access driver manager to obtain JDBC connection.
+ *
+ */
 public class ConnectionFactory {
 
 	private BuildConnection connection;
@@ -21,6 +25,12 @@ public class ConnectionFactory {
 				info);
 	}
 
+	/**
+	 * Connection using datasource. NOT IMPLEMENTED.
+	 * @param ctxFactory
+	 * @param dataSource
+	 * @param info
+	 */
 	public ConnectionFactory(String ctxFactory, String dataSource, Properties info) {
 		this.connection = new DataSourceConnection(ctxFactory, dataSource, info);
 	}

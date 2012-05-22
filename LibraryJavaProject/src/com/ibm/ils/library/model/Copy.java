@@ -15,6 +15,10 @@ import com.ibm.ils.library.model.exceptions.OperationFailed;
 import com.ibm.ils.library.model.exceptions.PatronNotFound;
 import com.ibm.ils.library.model.exceptions.RenewFailed;
 
+/**
+ * Represents a unique piece of library collection.
+ *
+ */
 public class Copy implements Serializable {
 	private static final long serialVersionUID = -1829277270477731043L;
 	private static final int MAX_TIMES_RENEW = 3;

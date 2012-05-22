@@ -12,6 +12,10 @@ import com.ibm.ils.library.model.exceptions.OperationFailed;
 import com.ibm.ils.library.model.exceptions.PatronExists;
 import com.ibm.ils.library.model.exceptions.PatronNotFound;
 
+/**
+ * Represents client of the library.
+ *
+ */
 public class Patron implements Serializable {
 	private static final long serialVersionUID = -3048224323818206645L;
 	private static final int MIN_PASSWORD_LENGTH = 5;

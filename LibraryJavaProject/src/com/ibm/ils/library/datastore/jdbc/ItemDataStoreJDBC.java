@@ -39,7 +39,6 @@ public class ItemDataStoreJDBC implements ItemDataStore {
 	@Override
 	public void add(Item item) throws SystemUnavailableException,
 			OperationFailed, ItemExists {
-		// TODO zda je volana s existujicimi atributy??
 		Connection connection = null;
 		PreparedStatement statementInsert = null;
 
