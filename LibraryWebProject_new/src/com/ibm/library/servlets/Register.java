@@ -75,7 +75,7 @@ public class Register extends HttpServlet {
 			} catch (OperationFailed e) {
 				showErrorMessage("Registration failure: Operation failed!", request, response);
 			} catch (InvalidPassword e) {
-				showErrorMessage("Registration failure: Invalid password!", request, response);
+				showErrorMessage(e.getMessage(), request, response);
 			}
 		} else {
 			showErrorMessage("Registration failure: All fields must be filled!", request, response);

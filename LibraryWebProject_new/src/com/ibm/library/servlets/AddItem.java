@@ -13,10 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
-import com.ibm.ils.library.model.Item;
-import com.ibm.ils.library.model.exceptions.ItemExists;
-import com.ibm.ils.library.model.exceptions.OperationFailed;
+import com.ibm.library.Item;
 
 /**
  * Servlet implementation class AddItem

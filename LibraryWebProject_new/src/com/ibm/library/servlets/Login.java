@@ -12,10 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
-import com.ibm.ils.library.model.Patron;
-import com.ibm.ils.library.model.exceptions.OperationFailed;
-import com.ibm.ils.library.model.exceptions.PatronNotFound;
+import com.ibm.library.Patron;
+
 
 /**
  * Servlet implementation class ProcessListItems
@@ -56,7 +54,7 @@ public class Login extends HttpServlet {
 			Patron p = Patron.findByEmail(patronEmail);
 			
 			if (p.getPassword().equals(patronPassword)) {
-				session.setAttribute("patron", p.getId());
+				session.setAttribute("patron", p.getPatronId());
 				session.setAttribute("info", "You have been logged!");
 				
 				response.sendRedirect("Default");
