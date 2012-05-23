@@ -97,9 +97,19 @@ public class Copy implements Serializable {
 		datastore.update(this);
 	}
 
-	public void renew() throws CopyNotFound, OperationFailed,
+	/**
+	 * @return false if item is not renewable (due date value is null)
+	 * @throws CopyNotFound
+	 * @throws OperationFailed
+	 * @throws SystemUnavailableException
+	 * @throws RenewFailed
+	 */
+	public boolean renew() throws CopyNotFound, OperationFailed,
 			SystemUnavailableException, RenewFailed {
 		Date due = getDue();
+		if (due == null) {
+			return false;
+		}
 
 		Calendar todayCalendar = Calendar.getInstance();
 		Calendar dueCalendar = Calendar.getInstance();
@@ -129,6 +139,7 @@ public class Copy implements Serializable {
 		} else {
 			throw new RenewFailed("Renewal is not allowed after the due date");
 		}
+		return true;
 	}
 
 	//
