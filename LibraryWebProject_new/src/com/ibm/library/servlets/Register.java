@@ -18,6 +18,8 @@ import com.ibm.ils.library.model.exceptions.PatronExists;
 
 /**
  * Servlet implementation class Register
+ * Get request only show register form
+ * Post request take values from form and save it into database (if they are correct)
  */
 @WebServlet("/Register")
 public class Register extends HttpServlet {
@@ -52,6 +54,7 @@ public class Register extends HttpServlet {
 		
 		if (email != "" && (email.indexOf("@") == -1 || email.indexOf(".") == -1)) {
 			showErrorMessage("Registration failure: Email is not in correct format!", request, response);
+			return;
 		}
 		
 		
@@ -64,7 +67,6 @@ public class Register extends HttpServlet {
 			try {
 				p.add();
 				
-				System.out.println("Registration success");
 				session.setAttribute("info", "A new patron has been registered!");
 				
 				response.sendRedirect("Default");

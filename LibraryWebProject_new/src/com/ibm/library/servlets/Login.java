@@ -1,8 +1,6 @@
 package com.ibm.library.servlets;
 
 import java.io.IOException;
-import java.net.PasswordAuthentication;
-import java.util.Collection;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -12,11 +10,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.ibm.library.Patron;
-
+import com.ibm.ils.library.datastore.exceptions.SystemUnavailableException;
+import com.ibm.ils.library.model.Patron;
+import com.ibm.ils.library.model.exceptions.OperationFailed;
+import com.ibm.ils.library.model.exceptions.PatronNotFound;
 
 /**
  * Servlet implementation class ProcessListItems
+ * Get request displays login form - user can put his login (email and password) 
+ * Post request verify these login values
+ *  - if they are correct, redirect to default page and show info message
+ *  - if they are wrong, stay in this page and show error message
  */
 @WebServlet("/Login")
 public class Login extends HttpServlet {
@@ -54,7 +58,7 @@ public class Login extends HttpServlet {
 			Patron p = Patron.findByEmail(patronEmail);
 			
 			if (p.getPassword().equals(patronPassword)) {
-				session.setAttribute("patron", p.getPatronId());
+				session.setAttribute("patron", p.getId());
 				session.setAttribute("info", "You have been logged!");
 				
 				response.sendRedirect("Default");

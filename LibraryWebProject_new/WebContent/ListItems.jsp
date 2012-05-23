@@ -33,11 +33,13 @@
 					<td>${item.title}</td>
 					<td>${item.copyNumber}</td>
 					<td>${item.due}</td>
+					<td>${item.renewMessage}</td>
 				</tr>
 			</c:forEach>
 			<tr><td><input type="submit" value="Renew" /></td></tr>
 		</tbody>
 	</table>
+	<a href="Default">Back</a>
 </form>
 </body>
 </html>

@@ -29,15 +29,22 @@
 		</tr>
 		<tr>
 			<td>Type of Item:</td>
-			<td><input type="text" id="type" name="type" /></td>
+			<td>
+				<select name="type" size="1">
+					<option value="B">book
+					<option value="C">CD
+					<option value="A">audio tape
+					<option value="D">DVD
+				</select>
+			</td>
 		</tr>
 		<tr>
 			<td>Oversize:</td>
 			<td><input type="checkbox" id="oversize" name="oversize" /></td>
 		</tr>
 		<tr>
-			<td>Number:</td>
-			<td><input type="text" id="number" name="number" /></td>
+			<td>Number of volumes:</td>
+			<td><input type="text" id="number" name="number" value="1" /></td>
 		</tr>
 		<tr>
 			<td>ISBN Number:</td>

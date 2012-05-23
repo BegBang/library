@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Servlet implementation class Default
+ * Default page for application
+ * Unlogged user can only logged
+ * Logged user can add items, register new users, list items and renew checked out items
  */
 @WebServlet("/Default")
 public class Default extends HttpServlet {

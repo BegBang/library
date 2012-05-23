@@ -1,7 +1,6 @@
 package com.ibm.library.servlets;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -23,18 +22,20 @@ import com.ibm.library.beans.LoanedCopyListBean;
 
 /**
  * Servlet implementation class ProcessListItems
+ * Servlet for display and renew checked out items
+ * Get request show checked out items and user can choose items to renew
+ * Post request works renewed items and display renew message to user
+ * 
  */
 @WebServlet("/ProcessListItems")
 public class ProcessListItems extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static final String LoanedCopy = null;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
 	public ProcessListItems() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -47,31 +48,41 @@ public class ProcessListItems extends HttpServlet {
 		
 		int patronId = getPatronId(request, response, session);
 		
+		if (patronId == -1) {
+			return;
+		}
+		
 		ServletContext context = getServletContext();
-		Copy copyX = new Copy();
 		Collection<LoanedCopy> loanedCopyList = null;
 		try {
-			loanedCopyList = copyX.findLoanedCopiesForPatronId(patronId);
+			loanedCopyList = Copy.findLoanedCopiesForPatronId(patronId);
 			session.setAttribute("copyList", loanedCopyList);
+			
+			if (loanedCopyList != null && loanedCopyList.size() != 0) {
+				LoanedCopyListBean bean = new LoanedCopyListBean();
+				bean.setLoanedCopyList(loanedCopyList);
+				session.setAttribute("listitems", bean);
+				context.getRequestDispatcher("ListItems.jsp")
+				.forward(request,response);
+			} else {
+				showErrorMessage("You have no items on loan!", request, response);
+			}
 		} catch (SystemUnavailableException e) {
 			showErrorMessage("Error: System is unavailable!", request, response);
 		} catch (OperationFailed e) {
 			showErrorMessage("Error: Operation failed!", request, response);
 		}
-		if (loanedCopyList != null && loanedCopyList.size() != 0) {
-			LoanedCopyListBean bean = new LoanedCopyListBean();
-			bean.setLoanedCopyList(loanedCopyList);
-			session.setAttribute("listitems", bean);
-			context.getRequestDispatcher("ListItems.jsp")
-			.forward(request,response);
-		} else {
-			showErrorMessage("You have no items on loan!", request, response);
-		}
-			
-		
-		
 	}
 	
+	/**
+	 * Verify if user have logged, otherwise, the error message appears
+	 * @param request
+	 * @param response
+	 * @param session
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	protected int getPatronId(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws ServletException, IOException {
 		try {
 			return Integer.parseInt(session.getAttribute("patron").toString());
@@ -81,34 +92,36 @@ public class ProcessListItems extends HttpServlet {
 			showErrorMessage("Error: You are not logged in!", request, response);
 		}
 		
-		return 0;
+		return -1;
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	@SuppressWarnings("unchecked")
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		String[] checkBoxes = request.getParameterValues("renew");
 		
 		int patronId = getPatronId(request, response, session);
 		
+		ServletContext context = getServletContext();
+		
 		Patron patron = null;
 		try {
 			patron = Patron.findById(patronId);
 		} catch (PatronNotFound e) {
-			// TODO Automaticky generovaný blok catch
-			e.printStackTrace();
+			showErrorMessage(e.getMessage(), request, response);
+			return;
 		} catch (SystemUnavailableException e) {
-			// TODO Automaticky generovaný blok catch
-			e.printStackTrace();
+			showErrorMessage(e.getMessage(), request, response);
+			return;
 		} catch (OperationFailed e) {
-			// TODO Automaticky generovaný blok catch
-			e.printStackTrace();
+			showErrorMessage(e.getMessage(), request, response);
+			return;
 		}
 		
+		@SuppressWarnings("unchecked")
 		Collection<LoanedCopy> loanedCopyList = (Collection<LoanedCopy>)session.getAttribute("copyList");
 		
 		if (checkBoxes != null) {
@@ -124,20 +137,18 @@ public class ProcessListItems extends HttpServlet {
 			try {
 				patron.renew(loanedCopyList);
 				
-				String info = "";
-				for (LoanedCopy copy : loanedCopyList) {
-					if (copy.isRenewRequest()) {
-						info += copy.getRenewMessage() + "<br />";
-					}
+				session.setAttribute("copyList", loanedCopyList);
+				
+				if (loanedCopyList != null && loanedCopyList.size() != 0) {
+					LoanedCopyListBean bean = new LoanedCopyListBean();
+					bean.setLoanedCopyList(loanedCopyList);
+					session.setAttribute("listitems", bean);
+					context.getRequestDispatcher("ListItems.jsp").forward(request,response);
 				}
-				session.setAttribute("info", info);
-				response.sendRedirect("Default");
 			} catch (OperationFailed e) {
-				// TODO Automaticky generovaný blok catch
-				e.printStackTrace();
+				showErrorMessage(e.getMessage(), request, response);
 			} catch (SystemUnavailableException e) {
-				// TODO Automaticky generovaný blok catch
-				e.printStackTrace();
+				showErrorMessage(e.getMessage(), request, response);
 			}
 		}
 		
