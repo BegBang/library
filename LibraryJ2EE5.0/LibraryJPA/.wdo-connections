@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connections:connections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:connections="http://www.ibm.com/websphere/wdo/connections">
+  <connection id="LibraryDB">
+    <development xsi:type="connections:rsc-live-connection" id="LibraryDB_dev" name="LibraryDB"/>
+    <runtime xsi:type="connections:datasource-connection" auto-deploy="true" class-location="${DERBY_JDBC_DRIVER_PATH}/derby.jar" id="LibraryDB_runtime" classname="org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource" database-location="C:\Users\Radomir\LibraryDB" database-name="LibraryDB" jndi-name="jdbc/LibraryDB" resource-reference-name="LibraryDB" server-name="derby:C:\Users\Radomir\LibraryDB" sql-vendor-type="50" userid=""/>
+  </connection>
+</connections:connections>
