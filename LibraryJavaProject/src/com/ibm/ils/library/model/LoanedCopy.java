@@ -61,12 +61,15 @@ public class LoanedCopy {
 				getTimesRenewed(), getCopyNumber());
 		
 		try {
-			copy.renew();
-			// it was renewed, update the LoanedCopy object
-			setRenewAccomplished(true);
-			setRenewMessage("Renew successful");
-			setDue(copy.getDue());
-			setTimesRenewed(copy.getTimesRenewed());
+			boolean renewable = copy.renew();
+			if (renewable) {
+				// it was renewed, update the LoanedCopy object
+				setRenewAccomplished(true);
+				setRenewMessage("Renew successful");
+				setDue(copy.getDue());
+				setTimesRenewed(copy.getTimesRenewed());
+			}
+			
 		} catch (CopyNotFound e) {
 			setRenewAccomplished(false);
 			setRenewMessage("Renew failed");
