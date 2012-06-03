@@ -1,3 +1,4 @@
+pridam neco sem1
 tento soubor je testovaci soubor, kde si chci vyzkouset merge :-)
 
 blabla
