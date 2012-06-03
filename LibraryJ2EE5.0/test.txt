@@ -1,0 +1,3 @@
+tento soubor je testovaci soubor, kde si chci vyzkouset merge :-)
+
+blabla
